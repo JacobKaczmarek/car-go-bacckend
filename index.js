@@ -1,7 +1,16 @@
 
 import { WebSocketServer } from 'ws';
+import { createServer } from 'https';
+import { readFileSync } from 'fs';
 
-const wss = new WebSocketServer({ port: 8080});
+const options = {
+    key: readFileSync('privkey.pem'),
+    cert: readFileSync('cert.pem')
+}
+
+const server = createServer(options);
+
+const wss = new WebSocketServer({ server});
 
 let queue = []
 
@@ -18,3 +27,5 @@ wss.on('connection', ws => {
         wss.clients.forEach(c => c.send(JSON.stringify(queue)))
     })
 })
+
+server.listen(8080)
