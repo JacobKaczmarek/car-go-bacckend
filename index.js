@@ -1,6 +1,5 @@
-
-import { WebSocketServer } from 'ws';
-import { createServer } from 'https';
+import { Server } from "socket.io";
+import { createServer } from 'http';
 import { readFileSync } from 'fs';
 
 const options = {
@@ -8,24 +7,51 @@ const options = {
     cert: readFileSync('cert.pem')
 }
 
-const server = createServer(options);
+const http = createServer();
 
-const wss = new WebSocketServer({ server});
+const io = new Server(http, {
+    cors: { origin: '*' }
+});
 
 let queue = []
+let users = []
 
-wss.on('connection', ws => {
-    ws.send(JSON.stringify(queue));
+io.on('connection', socket => {
+    socket.emit('init', { queue, users });
 
-    ws.on('message', data => {
-        if (data.toString() === 'skip') {
-            queue.shift()
-        } else {
-            queue.push(JSON.parse(data.toString()))
-        }
+    socket.on('skip', () => {
+        queue.shift()
+        io.emit('skip', queue)
+    })
 
-        wss.clients.forEach(c => c.send(JSON.stringify(queue)))
+    socket.on('register', (name) => {
+        users.push({
+            name,
+            socket: socket.id
+        })
+
+        io.emit('users', users)
+    })
+
+    socket.on('users', () => {
+        socket.emit('users', users)
+    })
+            
+    socket.on('add', (data) => {
+        queue.push(data)
+        io.emit('update', queue)
+    })
+
+    socket.on('disconnect', () => {
+        console.log(users)
+        console.log(socket.id)
+        console.log(users.find(user => user.socket === socket.id))
+        users = users.filter(user => user.socket !== socket.id)
+        console.log(users)
+    
+        io.emit('users', users)
     })
 })
 
-server.listen(8080)
+
+http.listen(8080)
