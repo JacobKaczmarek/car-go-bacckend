@@ -7,7 +7,7 @@ const options = {
     cert: readFileSync('cert.pem')
 }
 
-const http = createServer();
+const https = createServer(options);
 
 const io = new Server(https, {
     cors: { origin: '*' }
