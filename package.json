@@ -13,6 +13,7 @@
     "@types/websocket": "^1.0.5"
   },
   "dependencies": {
+    "socket.io": "^4.5.1",
     "ws": "^8.6.0"
   }
 }
