@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { createServer } from 'http';
+import { createServer } from 'https';
 import { readFileSync } from 'fs';
 
 const options = {
@@ -9,7 +9,7 @@ const options = {
 
 const http = createServer();
 
-const io = new Server(http, {
+const io = new Server(https, {
     cors: { origin: '*' }
 });
 
@@ -54,4 +54,4 @@ io.on('connection', socket => {
 })
 
 
-http.listen(8080)
+https.listen(8080)
